@@ -1,27 +1,36 @@
 ZOHO.embeddedApp.init().then(function() {
+    // 起動確認
+    document.getElementById('status').innerText = "🚀 SDK初期化完了。検証用関数を実行します...";
+    runVerify();
+});
+
+async function runVerify() {
     const statusEl = document.getElementById('status');
     const consoleEl = document.getElementById('console');
-    statusEl.innerText = "🚀 原点回帰テスト：実績のあるクエリで再試行中...";
-
-    // 本番で「動く」と言っていたクエリの書き方を再現
+    
+    // 正常に取れるコードと同じ日付指定
     const start = "2026-03-01";
     const end = "2026-03-31";
     
+    // 【検証内容】SELECTに nousyayoteibi を追加し、WHEREは実績のある形にする
     const coql = { 
-        "select_query": "select ClosingDay, VisitedDateTime, ServiceStore from Services where (VisitedDateTime between '" + start + "T00:00:00+09:00' and '" + end + "T23:59:59+09:00') limit 1" 
+        "select_query": "select nousyayoteibi, ClosingDay, VisitedDateTime from Services where ((ClosingDay between '" + start + "' and '" + end + "') or (VisitedDateTime between '" + start + "T00:00:00+09:00' and '" + end + "T23:59:59+09:00')) limit 0, 10" 
     };
 
-    ZOHO.CRM.API.coql(coql).then(function(res) {
-        statusEl.innerText = "🚩 レスポンス受信！";
-        if(res && res.data) {
-            statusEl.innerText = "✅ 成功！この書き方なら動きます。";
-            consoleEl.innerHTML = "<pre style='color:#00ff00;'>" + JSON.stringify(res.data[0], null, 2) + "</pre>";
+    try {
+        statusEl.innerText = "▶ COQLリクエスト送信中...";
+        // 正常に取れるコードと全く同じ呼び出し方(await使用)
+        const res = await ZOHO.CRM.API.coql(coql);
+        
+        if (res && res.data) {
+            statusEl.innerText = "✅ 成功！データを受信しました。";
+            consoleEl.innerHTML = "<b>取得した最新10件のリスト:</b><pre style='color:#00ff00; background:#000; padding:10px;'>" + JSON.stringify(res.data, null, 2) + "</pre>";
         } else {
             statusEl.innerText = "⚠️ 応答はありましたが、データが空です。";
             consoleEl.innerHTML = "<pre>" + JSON.stringify(res, null, 2) + "</pre>";
         }
-    }).catch(function(err) {
-        statusEl.innerText = "🚫 エラー発生";
-        consoleEl.innerHTML = "<pre style='color:#ff4444;'>" + JSON.stringify(err) + "</pre>";
-    });
-});
+    } catch (e) {
+        statusEl.innerText = "🚫 エラーが発生しました。";
+        consoleEl.innerText = e.toString();
+    }
+}
