@@ -44,7 +44,6 @@ async function runMassiveDebug() {
     };
 
     statusEl.innerText = "🚀 診断中...";
-
     // --- 検証グループA ---
     await test("A-1: IDのみ取得", "select id from Services limit 1");
     // ここで nousyayoteibi があるレコードを優先的に探すために is not null を使用
