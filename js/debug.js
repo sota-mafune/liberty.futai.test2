@@ -1,14 +1,12 @@
 ZOHO.embeddedApp.init().then(function() {
     const statusEl = document.getElementById('status');
     const consoleEl = document.getElementById('console');
-    statusEl.innerText = "✅ SDK初期化完了。データをリクエスト中...";
+    statusEl.innerText = "✅ SDK初期化完了。全件から5件リクエスト中...";
 
-    // 【修正ポイント】ServicePerson.Name を ServicePerson に変更（IDだけ取る最も安全な形）
+    // 条件を一切入れず、とにかく5件持ってくるだけのクエリ
     const coql = {
-        "select_query": "select nousyayoteibi, ClosingDay, ServiceStore, ServicePerson from Services where nousyayoteibi is not null limit 1"
+        "select_query": "select nousyayoteibi, ClosingDay, ServiceStore from Services limit 5"
     };
-
-    console.log("リクエスト開始:", coql);
 
     ZOHO.CRM.API.coql(coql).then(function(res) {
         let div = document.createElement('div');
@@ -16,9 +14,9 @@ ZOHO.embeddedApp.init().then(function() {
 
         if(res.data) {
             statusEl.innerText = "🎉 通信成功！データを受信しました。";
-            div.innerHTML = "<span class='success'>[SUCCESS] 受信データ:</span><br><pre>" + JSON.stringify(res.data[0], null, 2) + "</pre>";
+            div.innerHTML = "<span class='success'>[SUCCESS] 取得成功！データの中身:</span><br><pre>" + JSON.stringify(res.data, null, 2) + "</pre>";
         } else {
-            statusEl.innerText = "❌ 通信はしましたが、データが空、またはエラーです。";
+            statusEl.innerText = "❌ データが1件もありません、またはエラーです。";
             div.innerHTML = "<span class='error'>[RESPONSE ERROR]</span><br><pre>" + JSON.stringify(res, null, 2) + "</pre>";
         }
         consoleEl.appendChild(div);
