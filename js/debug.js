@@ -1,4 +1,21 @@
-ZOHO.embeddedApp.init().then(runMassiveDebug);
+ZOHO.embeddedApp.init().then(async function() {
+    const statusEl = document.getElementById('status');
+    const consoleEl = document.getElementById('console');
+
+    // ★ COQLが使えるかチェック
+    if (typeof ZOHO.CRM.API.coql !== "function") {
+        statusEl.innerText = "❌ 致命的：この環境では COQL メソッドが読み込まれていません。";
+        consoleEl.innerHTML = "<div style='color:red; padding:10px; border:1px solid red;'>" +
+            "SDKのバージョンが古いか、読み込みに失敗しています。<br>" +
+            "HTML内の <script src='...'> のURLを確認してください。</div>";
+        return;
+    }
+
+    statusEl.innerText = "🚀 SDK正常。診断を開始します...";
+    
+    // ここから先は、さきほどの診断テスト(runMassiveDebug)を呼び出す
+    runMassiveDebug(); 
+});
 
 async function runMassiveDebug() {
     const statusEl = document.getElementById('status');
