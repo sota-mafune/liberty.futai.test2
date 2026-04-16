@@ -3,10 +3,12 @@ ZOHO.embeddedApp.init().then(function() {
     const consoleEl = document.getElementById('console');
     statusEl.innerText = "✅ SDK初期化完了。データをリクエスト中...";
 
-    // 検証用の超シンプルクエリ
+    // 【修正ポイント】ServicePerson.Name を ServicePerson に変更（IDだけ取る最も安全な形）
     const coql = {
-        "select_query": "select nousyayoteibi, ClosingDay, ServiceStore, ServicePerson.Name from Services where nousyayoteibi is not null limit 1"
+        "select_query": "select nousyayoteibi, ClosingDay, ServiceStore, ServicePerson from Services where nousyayoteibi is not null limit 1"
     };
+
+    console.log("リクエスト開始:", coql);
 
     ZOHO.CRM.API.coql(coql).then(function(res) {
         let div = document.createElement('div');
@@ -21,7 +23,7 @@ ZOHO.embeddedApp.init().then(function() {
         }
         consoleEl.appendChild(div);
     }).catch(function(err) {
-        statusEl.innerText = "🚫 通信エラーが発生しました。";
+        statusEl.innerText = "🚫 通信エラー（例外）が発生しました。";
         consoleEl.innerHTML = "<div class='error'>[EXCEPTION] " + JSON.stringify(err) + "</div>";
     });
 });
