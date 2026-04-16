@@ -1,36 +1,29 @@
 ZOHO.embeddedApp.init().then(function() {
-    // 起動確認
-    document.getElementById('status').innerText = "🚀 SDK初期化完了。検証用関数を実行します...";
-    runVerify();
+    runChallenge();
 });
 
-async function runVerify() {
+async function runChallenge() {
     const statusEl = document.getElementById('status');
     const consoleEl = document.getElementById('console');
-    
-    // 正常に取れるコードと同じ日付指定
-    const start = "2026-03-01";
-    const end = "2026-03-31";
-    
-    // 【検証内容】SELECTに nousyayoteibi を追加し、WHEREは実績のある形にする
-    const coql = { 
-        "select_query": "select nousyayoteibi, ClosingDay, VisitedDateTime from Services where ((ClosingDay between '" + start + "' and '" + end + "') or (VisitedDateTime between '" + start + "T00:00:00+09:00' and '" + end + "T23:59:59+09:00')) limit 0, 10" 
+    statusEl.innerText = "🔥 最終検証：nullを除外して3月分を狙い撃ち中...";
+
+    // 【重要】まず is not null で空データを除外してから、日付の範囲を指定する
+    const coql = {
+        "select_query": "select nousyayoteibi, ClosingDay from Services where (nousyayoteibi is not null and (nousyayoteibi >= '2026-03-01T00:00:00+09:00' and nousyayoteibi <= '2026-03-31T23:59:59+09:00')) limit 10"
     };
 
     try {
-        statusEl.innerText = "▶ COQLリクエスト送信中...";
-        // 正常に取れるコードと全く同じ呼び出し方(await使用)
         const res = await ZOHO.CRM.API.coql(coql);
-        
         if (res && res.data) {
-            statusEl.innerText = "✅ 成功！データを受信しました。";
-            consoleEl.innerHTML = "<b>取得した最新10件のリスト:</b><pre style='color:#00ff00; background:#000; padding:10px;'>" + JSON.stringify(res.data, null, 2) + "</pre>";
+            statusEl.innerText = "🎊 成功しました！";
+            consoleEl.innerHTML = "<b>取得成功！3月のデータ件数: " + res.data.length + "件（一部表示）</b>" +
+                                "<pre style='color:#00ff00;'>" + JSON.stringify(res.data, null, 2) + "</pre>";
         } else {
-            statusEl.innerText = "⚠️ 応答はありましたが、データが空です。";
+            statusEl.innerText = "⚠️ エラーは出ませんでしたが、データが0件です。";
             consoleEl.innerHTML = "<pre>" + JSON.stringify(res, null, 2) + "</pre>";
         }
     } catch (e) {
-        statusEl.innerText = "🚫 エラーが発生しました。";
-        consoleEl.innerText = e.toString();
+        statusEl.innerText = "❌ やはり沈黙しました。null除外でもダメなようです。";
+        consoleEl.innerHTML = "<pre style='color:#ff4444;'>" + JSON.stringify(e) + "</pre>";
     }
 }
