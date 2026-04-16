@@ -1,24 +1,25 @@
 ZOHO.embeddedApp.init().then(function() {
     const statusEl = document.getElementById('status');
     const consoleEl = document.getElementById('console');
-    statusEl.innerText = "🔍 比較検証：VisitedDateTime で「3月件数」をカウント中...";
+    statusEl.innerText = "🚀 最終・原始的テスト：IDを1件だけリクエスト中...";
 
-    // まったく同じ条件で、フィールド名だけを VisitedDateTime に変更
-    const countQuery = {
-        "select_query": "select count(id) from Services where (VisitedDateTime between '2026-03-01T00:00:00+09:00' and '2026-03-31T23:59:59+09:00')"
+    // 期間指定も、集計関数も、すべて排除。
+    // 「Servicesの中に何かデータが1つでもあるか？」だけを確認します。
+    const ultimateSimpleQuery = {
+        "select_query": "select id from Services limit 1"
     };
 
-    ZOHO.CRM.API.coql(countQuery).then(function(res) {
-        if(res && res.data && res.data[0]) {
-            const count = res.data[0]["count(id)"];
-            statusEl.innerText = "✅ 集計完了！（やはり VisitedDateTime は動きます）";
-            consoleEl.innerHTML = "<span style='color:#00ff00; font-size:24px;'>3月の来店件数: " + count + "件</span>";
+    ZOHO.CRM.API.coql(ultimateSimpleQuery).then(function(res) {
+        statusEl.innerText = "🚩 レスポンス受信！";
+        if(res && res.data) {
+            statusEl.innerText = "✅ 成功！データは存在します。";
+            consoleEl.innerHTML = "<pre style='color:#00ff00;'>" + JSON.stringify(res.data, null, 2) + "</pre>";
         } else {
-            statusEl.innerText = "⚠️ VisitedDateTime でもダメでした...";
+            statusEl.innerText = "⚠️ 成功しましたが、データが0件です。";
             consoleEl.innerHTML = "<pre>" + JSON.stringify(res, null, 2) + "</pre>";
         }
     }).catch(function(err) {
-        statusEl.innerText = "🚫 エラー発生";
-        consoleEl.innerHTML = "<pre>" + JSON.stringify(err) + "</pre>";
+        statusEl.innerText = "🚫 エラーが発生しました。";
+        consoleEl.innerHTML = "<pre style='color:#ff4444;'>" + JSON.stringify(err) + "</pre>";
     });
 });
